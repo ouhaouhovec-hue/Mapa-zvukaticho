@@ -10,20 +10,34 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inconsolata:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
+    @font-face {
+      font-family: 'Junicode';
+      src: url('https://cdn.jsdelivr.net/gh/psb1558/Junicode-font@master/webfonts/Junicode.woff2') format('woff2');
+      font-weight: 400;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Junicode';
+      src: url('https://cdn.jsdelivr.net/gh/psb1558/Junicode-font@master/webfonts/Junicode-Bold.woff2') format('woff2');
+      font-weight: 700;
+      font-style: normal;
+    }
+  </style>
+  <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #0e0e0e;
-      --surface: #181818;
-      --surface2: #222222;
-      --border: #2e2e2e;
-      --accent: #c8f057;
-      --accent2: #57f0c8;
-      --text: #f0ede6;
-      --muted: #888;
-      --danger: #ff5f5f;
-      --font-head: 'Syne', sans-serif;
-      --font-body: 'Inconsolata', monospace;
+      --bg: #f0f4fb;
+      --surface: #ffffff;
+      --surface2: #f0f4fb;
+      --border: #dde6f7;
+      --accent: #3B86F6;
+      --accent2: #1a5fc8;
+      --text: #0e1a2e;
+      --muted: #6b7fa3;
+      --danger: #e53e3e;
+      --font-head: 'Junicode', serif;
+      --font-body: 'Syne', sans-serif;
       --radius: 12px;
     }
 
@@ -45,55 +59,64 @@
     /* Header */
     #header {
       position: fixed;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
+      top: 0;
+      left: 0;
       z-index: 1000;
-      background: rgba(14,14,14,0.88);
-      backdrop-filter: blur(12px);
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      padding: 10px 24px;
       display: flex;
-      align-items: center;
-      gap: 14px;
-      white-space: nowrap;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0;
+      padding: 18px 32px 28px 24px;
+      background: rgba(255,255,255,0.28);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-bottom-right-radius: 24px;
+      border: none;
     }
 
     #header h1 {
-      font-family: var(--font-head);
-      font-size: 15px;
-      font-weight: 800;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
+      font-family: 'Junicode', serif;
+      font-size: clamp(80px, 11vw, 160px);
+      font-weight: 700;
+      line-height: 0.95;
       color: var(--accent);
+      letter-spacing: -0.01em;
+      margin-left: -4px;
     }
 
-    #header .sep { color: var(--border); }
+    #header .sep { display: none; }
 
     #header .hint {
-      font-size: 12px;
-      color: var(--muted);
-      letter-spacing: 0.04em;
+      font-size: clamp(19px, 1.9vw, 30px);
+      color: var(--accent);
+      font-family: 'Junicode', serif;
+      font-weight: 700;
+      font-style: normal;
+      letter-spacing: 0.01em;
+      opacity: 0.9;
+      align-self: flex-end;
+      position: relative;
+      top: -0.55em;
+      padding-right: 0;
     }
 
     /* Pin count badge */
     #pin-count {
       position: fixed;
-      bottom: 24px;
-      left: 24px;
+      bottom: 0;
+      left: 0;
       z-index: 1000;
-      background: rgba(14,14,14,0.88);
-      backdrop-filter: blur(12px);
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      padding: 8px 16px;
-      font-size: 12px;
-      color: var(--muted);
-      letter-spacing: 0.06em;
+      width: 340px;
+      height: 215px;
+      display: flex;
+      align-items: flex-end;
+      padding: 0 0 28px 28px;
+      font-size: 32px;
+      font-family: 'Junicode', serif;
+      font-weight: 400;
+      color: #ffffff;
+      line-height: 1.2;
     }
-
-    #pin-count span { color: var(--accent); font-weight: 600; }
 
     /* Modal overlay */
     #modal-overlay {
@@ -101,7 +124,7 @@
       position: fixed;
       inset: 0;
       z-index: 2000;
-      background: rgba(0,0,0,0.7);
+      background: rgba(59,134,246,0.12);
       backdrop-filter: blur(4px);
       align-items: center;
       justify-content: center;
@@ -117,6 +140,7 @@
       width: 420px;
       max-width: 92vw;
       animation: slideUp 0.2s ease;
+      box-shadow: 0 20px 60px rgba(59,134,246,0.15);
     }
 
     @keyframes slideUp {
@@ -126,10 +150,11 @@
 
     #modal h2 {
       font-family: var(--font-head);
-      font-size: 18px;
+      font-size: 22px;
       font-weight: 700;
       margin-bottom: 20px;
-      color: var(--text);
+      color: var(--accent);
+      font-style: italic;
     }
 
     #modal h2 .coords {
@@ -183,7 +208,7 @@
 
     #drop-zone:hover, #drop-zone.dragover {
       border-color: var(--accent);
-      background: rgba(200,240,87,0.04);
+      background: rgba(59,134,246,0.04);
     }
 
     #drop-zone .dz-file-name {
@@ -271,7 +296,7 @@
       background: var(--surface) !important;
       border: 1px solid var(--border) !important;
       border-radius: var(--radius) !important;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.5) !important;
+      box-shadow: 0 8px 32px rgba(59,134,246,0.2) !important;
       padding: 0 !important;
     }
 
@@ -293,8 +318,9 @@
       font-size: 15px;
       font-weight: 700;
       margin-bottom: 4px;
-      color: var(--text);
+      color: var(--accent);
       padding-right: 20px;
+      font-style: italic;
     }
 
     .popup-inner .popup-coords {
@@ -308,7 +334,7 @@
       width: 100%;
       height: 32px;
       accent-color: var(--accent);
-      filter: invert(1) hue-rotate(180deg) saturate(3);
+      accent-color: var(--accent);
     }
 
     .popup-inner .popup-note {
@@ -323,9 +349,9 @@
       width: 14px;
       height: 14px;
       background: var(--accent);
-      border: 2px solid #0e0e0e;
+      border: 2px solid #ffffff;
       border-radius: 50%;
-      box-shadow: 0 0 0 3px rgba(200,240,87,0.3);
+      box-shadow: 0 0 0 3px rgba(59,134,246,0.3);
       transition: transform 0.15s;
     }
 
@@ -335,10 +361,10 @@
 
     /* Leaflet controls style override */
     .leaflet-control-zoom a {
-      background: rgba(14,14,14,0.88) !important;
-      backdrop-filter: blur(12px) !important;
-      color: var(--text) !important;
+      background: var(--surface) !important;
+      color: var(--accent) !important;
       border-color: var(--border) !important;
+      font-weight: 700 !important;
     }
 
     .leaflet-control-zoom a:hover {
@@ -349,6 +375,22 @@
       border: 1px solid var(--border) !important;
       border-radius: 8px !important;
       overflow: hidden;
+    }
+
+    /* Dot grid decoration */
+    #dot-grid {
+      position: fixed;
+      bottom: 0;
+      right: 0;
+      z-index: 1000;
+      width: 400px;
+      height: 400px;
+      pointer-events: none;
+    }
+
+    .dot {
+      border-radius: 50%;
+      background: var(--accent);
     }
 
     /* Loading spinner */
@@ -369,11 +411,10 @@
 
     #loading h1 {
       font-family: var(--font-head);
-      font-size: 24px;
-      font-weight: 800;
-      letter-spacing: 0.1em;
+      font-size: 48px;
+      font-weight: 900;
       color: var(--accent);
-      text-transform: uppercase;
+      font-style: italic;
     }
 
     .spinner {
@@ -386,6 +427,9 @@
     }
 
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    .leaflet-control-attribution { display: none !important; }
+    .leaflet-control-zoom { display: none !important; }
   </style>
 </head>
 <body>
@@ -404,7 +448,8 @@
 </div>
 
 <div id="pin-count">
-  <span id="count-num">0</span> nahraných tich
+  <img src="blob.png" alt="" style="position:absolute;bottom:0;left:0;width:100%;height:100%;object-fit:fill;pointer-events:none;"/>
+  <div style="position:relative;z-index:2;"><span id="count-num"></span> Nahraných tich</div>
 </div>
 
 <!-- Add pin modal -->
@@ -464,15 +509,13 @@
   const db = getFirestore(app);
 
   // Map setup — centered on Czech Republic
-  const map = L.map('map', { zoomControl: false }).setView([49.8, 15.5], 7);
+  const map = L.map('map', { zoomControl: false, attributionControl: false }).setView([49.8, 15.5], 7);
 
   L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
     attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/">CARTO</a>',
     subdomains: 'abcd',
     maxZoom: 19
   }).addTo(map);
-
-  L.control.zoom({ position: 'bottomright' }).addTo(map);
 
   // State
   let pendingLat = null;
@@ -618,5 +661,8 @@
     if (e.target === document.getElementById('modal-overlay')) window.closeModal();
   });
 </script>
+
+<div id="dot-grid">
+  <img src="dots.png" alt="" style="width:100%;height:100%;display:block;"/>
+</div>
 </body>
-</html>

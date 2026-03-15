@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sound Map</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://ucarecdn.com/libs/widget/3.x/uploadcare.full.min.js"></script>
+  <script>UPLOADCARE_PUBLIC_KEY = "db5c9d580355e51b2bfe"; UPLOADCARE_LIVE = false;</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inconsolata:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0e0e0e;
+      --surface: #181818;
+      --surface2: #222222;
+      --border: #2e2e2e;
+      --accent: #c8f057;
+      --accent2: #57f0c8;
+      --text: #f0ede6;
+      --muted: #888;
+      --danger: #ff5f5f;
+      --font-head: 'Syne', sans-serif;
+      --font-body: 'Inconsolata', monospace;
+      --radius: 12px;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      overflow: hidden;
+    }
+
+    #map {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      filter: saturate(0.6) brightness(0.75);
+    }
+
+    /* Header */
+    #header {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      background: rgba(14,14,14,0.88);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 10px 24px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      white-space: nowrap;
+    }
+
+    #header h1 {
+      font-family: var(--font-head);
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    #header .sep { color: var(--border); }
+
+    #header .hint {
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+    }
+
+    /* Pin count badge */
+    #pin-count {
+      position: fixed;
+      bottom: 24px;
+      left: 24px;
+      z-index: 1000;
+      background: rgba(14,14,14,0.88);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 8px 16px;
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+    }
+
+    #pin-count span { color: var(--accent); font-weight: 600; }
+
+    /* Modal overlay */
+    #modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+      align-items: center;
+      justify-content: center;
+    }
+
+    #modal-overlay.open { display: flex; }
+
+    #modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      width: 420px;
+      max-width: 92vw;
+      animation: slideUp 0.2s ease;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    #modal h2 {
+      font-family: var(--font-head);
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      color: var(--text);
+    }
+
+    #modal h2 .coords {
+      font-family: var(--font-body);
+      font-size: 11px;
+      font-weight: 400;
+      color: var(--muted);
+      display: block;
+      margin-top: 4px;
+      letter-spacing: 0.04em;
+    }
+
+    .field { margin-bottom: 16px; }
+
+    .field label {
+      display: block;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .field input[type="text"] {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-family: var(--font-body);
+      font-size: 14px;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .field input[type="text"]:focus {
+      border-color: var(--accent);
+    }
+
+    /* Drop zone */
+    #drop-zone {
+      border: 1.5px dashed var(--border);
+      border-radius: 8px;
+      padding: 24px 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      position: relative;
+    }
+
+    #drop-zone:hover, #drop-zone.dragover {
+      border-color: var(--accent);
+      background: rgba(200,240,87,0.04);
+    }
+
+    #drop-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    #drop-zone .dz-icon {
+      font-size: 28px;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    #drop-zone .dz-text {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    #drop-zone .dz-text strong { color: var(--text); }
+
+    #drop-zone .dz-file-name {
+      font-size: 12px;
+      color: var(--accent);
+      margin-top: 6px;
+      display: none;
+    }
+
+    /* Progress bar */
+    #upload-progress {
+      display: none;
+      margin-top: 10px;
+    }
+
+    #upload-progress .prog-label {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 5px;
+      letter-spacing: 0.04em;
+    }
+
+    #prog-bar-wrap {
+      background: var(--surface2);
+      border-radius: 999px;
+      height: 4px;
+      overflow: hidden;
+    }
+
+    #prog-bar {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 999px;
+      width: 0%;
+      transition: width 0.2s;
+    }
+
+    /* Buttons */
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 11px;
+      border-radius: 8px;
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      border: none;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+
+    .btn:active { transform: scale(0.98); }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #0e0e0e;
+    }
+
+    .btn-primary:hover { opacity: 0.88; }
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .btn-ghost {
+      background: var(--surface2);
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+
+    .btn-ghost:hover { color: var(--text); }
+
+    #modal-error {
+      font-size: 12px;
+      color: var(--danger);
+      margin-top: 10px;
+      display: none;
+    }
+
+    /* Leaflet popup custom */
+    .leaflet-popup-content-wrapper {
+      background: var(--surface) !important;
+      border: 1px solid var(--border) !important;
+      border-radius: var(--radius) !important;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5) !important;
+      padding: 0 !important;
+    }
+
+    .leaflet-popup-content {
+      margin: 0 !important;
+      width: auto !important;
+      min-width: 240px !important;
+    }
+
+    .leaflet-popup-tip { background: var(--surface) !important; }
+    .leaflet-popup-close-button { color: var(--muted) !important; top: 10px !important; right: 10px !important; font-size: 18px !important; }
+
+    .popup-inner {
+      padding: 16px;
+    }
+
+    .popup-inner h3 {
+      font-family: var(--font-head);
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: var(--text);
+      padding-right: 20px;
+    }
+
+    .popup-inner .popup-coords {
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+    }
+
+    .popup-inner audio {
+      width: 100%;
+      height: 32px;
+      accent-color: var(--accent);
+      filter: invert(1) hue-rotate(180deg) saturate(3);
+    }
+
+    .popup-inner .popup-note {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 8px;
+      font-style: italic;
+    }
+
+    /* Custom marker */
+    .custom-pin {
+      width: 14px;
+      height: 14px;
+      background: var(--accent);
+      border: 2px solid #0e0e0e;
+      border-radius: 50%;
+      box-shadow: 0 0 0 3px rgba(200,240,87,0.3);
+      transition: transform 0.15s;
+    }
+
+    .custom-pin:hover {
+      transform: scale(1.4);
+    }
+
+    /* Leaflet controls style override */
+    .leaflet-control-zoom a {
+      background: rgba(14,14,14,0.88) !important;
+      backdrop-filter: blur(12px) !important;
+      color: var(--text) !important;
+      border-color: var(--border) !important;
+    }
+
+    .leaflet-control-zoom a:hover {
+      background: var(--surface2) !important;
+    }
+
+    .leaflet-bar {
+      border: 1px solid var(--border) !important;
+      border-radius: 8px !important;
+      overflow: hidden;
+    }
+
+    /* Loading spinner */
+    #loading {
+      position: fixed;
+      inset: 0;
+      z-index: 3000;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 16px;
+      transition: opacity 0.4s;
+    }
+
+    #loading.done { opacity: 0; pointer-events: none; }
+
+    #loading h1 {
+      font-family: var(--font-head);
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      text-transform: uppercase;
+    }
+
+    .spinner {
+      width: 28px;
+      height: 28px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<div id="loading">
+  <h1>Sound Map</h1>
+  <div class="spinner"></div>
+</div>
+
+<div id="map"></div>
+
+<div id="header">
+  <h1>Sound Map</h1>
+  <span class="sep">|</span>
+  <span class="hint">click anywhere to add a pin</span>
+</div>
+
+<div id="pin-count">
+  <span id="count-num">0</span> sounds recorded
+</div>
+
+<!-- Add pin modal -->
+<div id="modal-overlay">
+  <div id="modal">
+    <h2>
+      Add a sound
+      <span class="coords" id="modal-coords"></span>
+    </h2>
+
+    <div class="field">
+      <label>Title</label>
+      <input type="text" id="pin-title" placeholder="What does this place sound like?"/>
+    </div>
+
+    <div class="field">
+      <label>Note (optional)</label>
+      <input type="text" id="pin-note" placeholder="e.g. recorded at dawn, busy street..."/>
+    </div>
+
+    <div class="field">
+      <label>Audio file</label>
+      <div id="drop-zone" style="padding:12px 16px;">
+        <input type="hidden" role="uploadcare-uploader" id="uc-file" data-images-only="false"/>
+        <div class="dz-file-name" id="file-name" style="margin-top:0"></div>
+      </div>
+      <div id="upload-progress">
+        <div class="prog-label">Uploading…</div>
+        <div id="prog-bar-wrap"><div id="prog-bar"></div></div>
+      </div>
+    </div>
+
+    <div id="modal-error"></div>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" id="save-btn" onclick="savePin()">Save pin</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBnVF8MLBPqEMOXZx58yeitE6-v3nWzuYk",
+    authDomain: "mapa-8e064.firebaseapp.com",
+    projectId: "mapa-8e064",
+    storageBucket: "mapa-8e064.firebasestorage.app",
+    messagingSenderId: "565194068392",
+    appId: "1:565194068392:web:906c8a3032c4e5f1b4cd9d"
+  };
+
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // Map setup
+  const map = L.map('map', { zoomControl: false }).setView([50.0, 15.0], 5);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors',
+    maxZoom: 19
+  }).addTo(map);
+
+  L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+
+
+  // State
+  let pendingLat = null;
+  let pendingLng = null;
+  let selectedFile = null;
+  let pinCount = 0;
+
+  function makePinIcon() {
+    return L.divIcon({
+      className: '',
+      html: '<div class="custom-pin"></div>',
+      iconSize: [14, 14],
+      iconAnchor: [7, 7],
+      popupAnchor: [0, -12]
+    });
+  }
+
+  function addPinToMap(lat, lng, title, note, audioUrl) {
+    const marker = L.marker([lat, lng], { icon: makePinIcon() }).addTo(map);
+    const noteHtml = note ? `<div class="popup-note">${note}</div>` : '';
+    marker.bindPopup(`
+      <div class="popup-inner">
+        <h3>${title}</h3>
+        <div class="popup-coords">${lat.toFixed(5)}, ${lng.toFixed(5)}</div>
+        <audio controls src="${audioUrl}"></audio>
+        ${noteHtml}
+      </div>
+    `);
+    pinCount++;
+    document.getElementById('count-num').textContent = pinCount;
+  }
+
+  // Load existing pins
+  async function loadPins() {
+    const snap = await getDocs(collection(db, 'pins'));
+    snap.forEach(doc => {
+      const d = doc.data();
+      addPinToMap(d.lat, d.lng, d.title, d.note || '', d.audioUrl);
+    });
+    document.getElementById('loading').classList.add('done');
+  }
+
+  loadPins();
+
+  // Click map to open modal
+  map.on('click', (e) => {
+    pendingLat = e.latlng.lat;
+    pendingLng = e.latlng.lng;
+    document.getElementById('modal-coords').textContent =
+      `${pendingLat.toFixed(5)}, ${pendingLng.toFixed(5)}`;
+    document.getElementById('pin-title').value = '';
+    document.getElementById('pin-note').value = '';
+    document.getElementById('file-name').style.display = 'none';
+    document.getElementById('file-name').textContent = '';
+    document.getElementById('upload-progress').style.display = 'none';
+    document.getElementById('prog-bar').style.width = '0%';
+    document.getElementById('modal-error').style.display = 'none';
+    document.getElementById('save-btn').disabled = false;
+    selectedFile = null;
+    ucWidget.value(null);
+    document.getElementById('modal-overlay').classList.add('open');
+    setTimeout(() => document.getElementById('pin-title').focus(), 100);
+  });
+
+  // Uploadcare widget
+  const ucWidget = uploadcare.Widget('#uc-file');
+  ucWidget.onChange(function(file) {
+    if (file) {
+      selectedFile = file;
+      file.promise().done(function(info) {
+        const nameEl = document.getElementById('file-name');
+        nameEl.textContent = info.name;
+        nameEl.style.display = 'block';
+      });
+    } else {
+      selectedFile = null;
+    }
+  });
+
+  async function uploadFile(file) {
+    // file is already an Uploadcare file object, just get its CDN url
+    return new Promise((resolve, reject) => {
+      document.getElementById('prog-bar').style.width = '100%';
+      file.promise().done(function(info) {
+        resolve(info.cdnUrl);
+      }).fail(function() {
+        reject(new Error('Upload failed'));
+      });
+    });
+  }
+
+  // Expose savePin and closeModal globally
+  window.closeModal = function() {
+    document.getElementById('modal-overlay').classList.remove('open');
+  };
+
+  window.savePin = async function() {
+    const title = document.getElementById('pin-title').value.trim();
+    const note = document.getElementById('pin-note').value.trim();
+    const errEl = document.getElementById('modal-error');
+    errEl.style.display = 'none';
+
+    if (!title) {
+      errEl.textContent = 'Please add a title.';
+      errEl.style.display = 'block';
+      return;
+    }
+    if (!selectedFile) {
+      errEl.textContent = 'Please select an audio file using the button above.';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    const saveBtn = document.getElementById('save-btn');
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Uploading…';
+
+    document.getElementById('upload-progress').style.display = 'block';
+
+    try {
+      const audioUrl = await uploadFile(selectedFile);
+
+      await addDoc(collection(db, 'pins'), {
+        lat: pendingLat,
+        lng: pendingLng,
+        title,
+        note,
+        audioUrl,
+        createdAt: new Date().toISOString()
+      });
+
+      addPinToMap(pendingLat, pendingLng, title, note, audioUrl);
+      window.closeModal();
+    } catch (err) {
+      errEl.textContent = 'Something went wrong: ' + err.message;
+      errEl.style.display = 'block';
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Save pin';
+    }
+  };
+
+  // Close modal on overlay click
+  document.getElementById('modal-overlay').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('modal-overlay')) window.closeModal();
+  });
+</script>
+</body>
+</html>

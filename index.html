@@ -66,7 +66,7 @@
       flex-direction: column;
       align-items: flex-start;
       gap: 0;
-      padding: 18px 32px 28px 24px;
+      padding: clamp(10px, 2vw, 18px) clamp(16px, 3vw, 32px) clamp(14px, 2.5vw, 28px) clamp(12px, 2vw, 24px);
       background: rgba(255,255,255,0.28);
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
@@ -76,7 +76,7 @@
 
     #header h1 {
       font-family: 'Junicode', serif;
-      font-size: clamp(80px, 11vw, 160px);
+      font-size: clamp(40px, 11vw, 160px);
       font-weight: 700;
       line-height: 0.95;
       color: var(--accent);
@@ -87,7 +87,7 @@
     #header .sep { display: none; }
 
     #header .hint {
-      font-size: clamp(19px, 1.9vw, 30px);
+      font-size: clamp(12px, 1.9vw, 30px);
       color: var(--accent);
       font-family: 'Junicode', serif;
       font-weight: 700;
@@ -106,12 +106,12 @@
       bottom: 0;
       left: 0;
       z-index: 1000;
-      width: 340px;
-      height: 215px;
+      width: clamp(180px, 35vw, 340px);
+      height: clamp(110px, 22vw, 215px);
       display: flex;
       align-items: flex-end;
-      padding: 0 0 28px 28px;
-      font-size: 32px;
+      padding: 0 0 clamp(14px, 2.5vw, 28px) clamp(14px, 2.5vw, 28px);
+      font-size: clamp(16px, 3vw, 32px);
       font-family: 'Junicode', serif;
       font-weight: 400;
       color: #ffffff;
@@ -383,8 +383,8 @@
       bottom: 0;
       right: 0;
       z-index: 1000;
-      width: 720px;
-      height: 720px;
+      width: clamp(180px, 30vw, 400px);
+      height: clamp(180px, 30vw, 400px);
       pointer-events: none;
     }
 
@@ -427,6 +427,14 @@
     }
 
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 600px) {
+      #header h1 { font-size: clamp(36px, 13vw, 80px); }
+      #header .hint { font-size: clamp(11px, 3.5vw, 18px); top: -0.4em; }
+      #pin-count { width: clamp(140px, 48vw, 220px); height: clamp(88px, 30vw, 140px); font-size: clamp(12px, 4vw, 20px); padding: 0 0 12px 14px; }
+      #dot-grid { width: clamp(130px, 40vw, 220px); height: clamp(130px, 40vw, 220px); }
+      #modal { padding: 20px; }
+    }
 
     .leaflet-control-attribution { display: none !important; }
     .leaflet-control-zoom { display: none !important; }

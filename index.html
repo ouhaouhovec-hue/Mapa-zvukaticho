@@ -56,7 +56,7 @@
       
     }
 
-    /* Header */
+
     #header {
       position: fixed;
       top: 0;
@@ -100,7 +100,7 @@
       padding-right: 0;
     }
 
-    /* Pin count badge */
+
     #pin-count {
       position: fixed;
       bottom: 0;
@@ -118,7 +118,7 @@
       line-height: 1.2;
     }
 
-    /* Modal overlay */
+
     #modal-overlay {
       display: none;
       position: fixed;
@@ -195,7 +195,7 @@
       border-color: var(--accent);
     }
 
-    /* Drop zone */
+
     #drop-zone {
       border: 1.5px dashed var(--border);
       border-radius: 8px;
@@ -218,7 +218,7 @@
       display: none;
     }
 
-    /* Progress bar */
+
     #upload-progress {
       display: none;
       margin-top: 10px;
@@ -291,7 +291,7 @@
       display: none;
     }
 
-    /* Leaflet popup custom */
+   
     .leaflet-popup-content-wrapper {
       background: var(--surface) !important;
       border: 1px solid var(--border) !important;
@@ -344,7 +344,7 @@
       font-style: italic;
     }
 
-    /* Custom marker */
+
     .custom-pin {
       width: 14px;
       height: 14px;
@@ -377,7 +377,7 @@
       overflow: hidden;
     }
 
-    /* Dot grid decoration */
+  
     #dot-grid {
       position: fixed;
       bottom: 0;
@@ -393,7 +393,7 @@
       background: var(--accent);
     }
 
-    /* Loading spinner */
+ 
     #loading {
       position: fixed;
       inset: 0;
@@ -516,7 +516,7 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  // Map setup — centered on Czech Republic
+
   const map = L.map('map', { zoomControl: false, attributionControl: false }).setView([49.8, 15.5], 7);
 
   L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
@@ -525,7 +525,7 @@
     maxZoom: 19
   }).addTo(map);
 
-  // State
+
   let pendingLat = null;
   let pendingLng = null;
   let selectedFile = null;
@@ -556,7 +556,7 @@
     document.getElementById('count-num').textContent = pinCount;
   }
 
-  // Load existing pins
+
   async function loadPins() {
     const snap = await getDocs(collection(db, 'pins'));
     snap.forEach(doc => {
@@ -568,7 +568,7 @@
 
   loadPins();
 
-  // Click map to open modal
+
   map.on('click', (e) => {
     pendingLat = e.latlng.lat;
     pendingLng = e.latlng.lng;
@@ -614,7 +614,7 @@
     });
   }
 
-  // Expose savePin and closeModal globally
+ 
   window.closeModal = function() {
     document.getElementById('modal-overlay').classList.remove('open');
   };
